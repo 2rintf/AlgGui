@@ -56,62 +56,6 @@ AlgGui::AlgGui(QWidget *parent)
 	ui.setupUi(this);
 }
 
-//void AlgGui::on_chkBoxUnder_clicked(bool checked)
-//{
-//	//QFont font = ui->txtEdit->font();
-//	QFont font = ui.txtEdit->font();
-//	font.setUnderline(checked);
-//	ui.txtEdit->setFont(font);
-//
-//}
-
-//void AlgGui::on_chkBoxItalic_clicked(bool checked)
-//{
-//	QFont font = ui.txtEdit->font();
-//	font.setItalic(checked);
-//	ui.txtEdit->setFont(font);
-//}
-
-//void AlgGui::on_chkBoxBold_clicked(bool checked)
-//{
-//	QFont font = ui.txtEdit->font();
-//	font.setBold(checked);
-//	ui.txtEdit->setFont(font);
-//}
-//
-
-////还原
-//void AlgGui::on_BtnOK_clicked()
-//{
-//	//还原字体形式
-//	QFont font = ui.txtEdit->font();
-//	font.setBold(false);
-//	font.setItalic(false);
-//	font.setUnderline(false);
-//	ui.txtEdit->setFont(font);
-//	//还原checkBox的状态
-//	ui.chkBoxBold->setChecked(false);
-//	ui.chkBoxItalic->setChecked(false);
-//	ui.chkBoxUnder->setChecked(false);
-//
-//}
-//
-//void AlgGui::on_BtnCancel_clicked()
-//{
-//	//还原字体样式
-//	QFont font = ui.txtEdit->font();
-//	font.setBold(false);
-//	font.setItalic(false);
-//	font.setUnderline(false);
-//	ui.txtEdit->setFont(font);
-//	//还原checkBox的状态
-//	ui.chkBoxBold->setChecked(false);
-//	ui.chkBoxItalic->setChecked(false);
-//	ui.chkBoxUnder->setChecked(false);
-//
-//	//清空textBox
-//	ui.txtEdit->clear();
-//}
 
 void AlgGui::on_BtnExit_clicked()
 {
