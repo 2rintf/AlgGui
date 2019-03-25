@@ -1,6 +1,7 @@
 ﻿#pragma execution_character_set("utf-8")
 
 #include "AlgGui.h"
+#include "algwrap.h"
 
 
 
@@ -71,7 +72,8 @@ void AlgGui::on_BtnFilePath_clicked()
 {
 
 	/*****************确认输入参数-START************************/
-	
+	std::cout << "===========param used==============" << std::endl;
+
 	// 显示视频时的resize方式
 	int IndexOfResizeWay = ui.BoxOfResizeWay->currentIndex();// default is INTER_AREA.
 	switch (IndexOfResizeWay)
@@ -96,13 +98,21 @@ void AlgGui::on_BtnFilePath_clicked()
 		break;
 	case(0):
 		IndexOfYolo = false;
+		std::cout << "NO YOLO" << std::endl;
 		break;
 	case(1):
 		IndexOfYolo = true;
+		std::cout << "with YOLO" << std::endl;
 		break;
 	}
-	/*****************确认输入参数-END************************/
 
+	// alarmTime
+	alarmTime = ui.BoxOfAlarmTime->value();
+	std::cout << "alarm time:" << alarmTime << std::endl;
+
+
+	std::cout << "===========param used==============" << std::endl;
+	/*****************确认输入参数-END************************/
 
 
 
@@ -165,7 +175,7 @@ void AlgGui::startShowVideo(std::string path)
 		cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
 
 		double time3 = ((double)(cv::getTickCount() - start3)) * 1000 / getTickFrequency();
-		std::cout << "resize cost : " << time3 << "ms" << std::endl;
+		//std::cout << "resize cost : " << time3 << "ms" << std::endl;
 
 
 		// 注意step，对齐内存，防止一些奇葩格式的视频出错

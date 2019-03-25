@@ -24,8 +24,23 @@ protected:
 	QImage frame_qt;
 	QImage frameToShow;
 	std::string filePath_cv;
+	std::string alarmPath_cv;// ±¨¾¯Í¼Æ¬±£´æÂ·¾¶
+
+	/*** param ***/
 	int wayOfResize = cv::INTER_AREA;
 	bool isYolo = false;
+	int alarmTime;
+
+	Mat bgImg;
+	Mat fgImg;
+	Mat tsoImg;
+	QImage bgImg_qt;
+	QImage fgImg_qt;
+	QImage tsoImg_qt;
+
+	Mat alarmImg;
+	QImage alarmImg_qt;
+
 
 
 	bool isClickToClose = false;
