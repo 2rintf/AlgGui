@@ -132,10 +132,6 @@ void AlgGui::on_BtnFilePath_clicked()
 }
 
 
-
-
-
-
 /*******具体操作函数*********/
 void AlgGui::startShowVideo(std::string path)
 {
