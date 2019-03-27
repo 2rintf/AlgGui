@@ -178,7 +178,7 @@
      <x>40</x>
      <y>100</y>
      <width>301</width>
-     <height>91</height>
+     <height>141</height>
     </rect>
    </property>
    <property name="title">
@@ -251,6 +251,39 @@
           <string>是</string>
          </property>
         </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="font">
+         <font>
+          <family>宋体</family>
+          <pointsize>11</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Alarm时间：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="BoxOfAlarmTime">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>999</number>
+        </property>
+        <property name="value">
+         <number>120</number>
+        </property>
+        <property name="displayIntegerBase">
+         <number>10</number>
+        </property>
        </widget>
       </item>
      </layout>

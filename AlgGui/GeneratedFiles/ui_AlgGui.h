@@ -22,6 +22,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -57,6 +58,9 @@ public:
     QHBoxLayout *horizontalLayout;
     QLabel *label_2;
     QComboBox *BoxOfIsYolo;
+    QHBoxLayout *horizontalLayout_2;
+    QLabel *label_3;
+    QSpinBox *BoxOfAlarmTime;
 
     void setupUi(QDialog *AlgGuiClass)
     {
@@ -149,7 +153,7 @@ public:
 
         paramGroupBox = new QGroupBox(AlgGuiClass);
         paramGroupBox->setObjectName(QStringLiteral("paramGroupBox"));
-        paramGroupBox->setGeometry(QRect(40, 100, 301, 91));
+        paramGroupBox->setGeometry(QRect(40, 100, 301, 141));
         verticalLayout = new QVBoxLayout(paramGroupBox);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
@@ -196,6 +200,27 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setSpacing(6);
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        label_3 = new QLabel(paramGroupBox);
+        label_3->setObjectName(QStringLiteral("label_3"));
+        label_3->setFont(font);
+
+        horizontalLayout_2->addWidget(label_3);
+
+        BoxOfAlarmTime = new QSpinBox(paramGroupBox);
+        BoxOfAlarmTime->setObjectName(QStringLiteral("BoxOfAlarmTime"));
+        BoxOfAlarmTime->setMinimum(1);
+        BoxOfAlarmTime->setMaximum(999);
+        BoxOfAlarmTime->setValue(120);
+        BoxOfAlarmTime->setDisplayIntegerBase(10);
+
+        horizontalLayout_2->addWidget(BoxOfAlarmTime);
+
+
+        verticalLayout->addLayout(horizontalLayout_2);
+
 
         retranslateUi(AlgGuiClass);
 
@@ -231,6 +256,7 @@ public:
          << QApplication::translate("AlgGuiClass", "\345\220\246", Q_NULLPTR)
          << QApplication::translate("AlgGuiClass", "\346\230\257", Q_NULLPTR)
         );
+        label_3->setText(QApplication::translate("AlgGuiClass", "Alarm\346\227\266\351\227\264\357\274\232", Q_NULLPTR));
     } // retranslateUi
 
 };
