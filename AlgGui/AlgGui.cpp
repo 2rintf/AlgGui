@@ -1,7 +1,7 @@
 ﻿#pragma execution_character_set("utf-8")
 
 #include "AlgGui.h"
-#include "algwrap.h"
+
 
 
 
@@ -49,12 +49,30 @@ std::string qstr2str(const QString qstr)
 }
 /**************** utils func end ****************/
 
+AlgGui* AlgGui::p = NULL;
+void AlgGui::bgCallBack(RGBData backgroundImg, bool endFlag, void* data)
+{
+	if (p == NULL)
+		return;
+	p->bgCallBack_intern(backgroundImg, endFlag, data);
+
+}
+
+void AlgGui::bboxCallBack(std::vector<BBox> boxes, RGBData frame, void* data)
+{
+	if (p == NULL)
+	{
+		return;
+	}
+	p->bboxCallBack_intern(boxes, frame, data);
+}
 
 
 AlgGui::AlgGui(QWidget *parent)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
+	p = this;
 }
 
 
@@ -126,7 +144,7 @@ void AlgGui::on_BtnFilePath_clicked()
 		qDebug() << filePath << endl;
 		filePath_cv = qstr2str(filePath);
 		//filePath_cv = filePath.toStdString();
-		std::cout <<"std::string = "<< filePath_cv << std::endl;
+		std::cout << "std::string = " << filePath_cv << std::endl;
 	}
 
 	// disable参数选项
@@ -146,6 +164,21 @@ void AlgGui::on_BtnFilePath_clicked()
 void AlgGui::startShowVideo(std::string path)
 {
 	capture.open(path);
+	capture >> frame_cv;
+	width = frame_cv.cols;
+	height = frame_cv.rows;
+	region = getRegion(width, height);
+	rgbdata = RGBData((char*)frame_cv.data, width, height);
+
+	rp = RegionParam(region, 0.0011f, alarmTime, 120, { 0,0.3f,3.5f,9999 });
+
+
+
+	//PtrALGWrap api = createALGWrap(AlgGui::bgCallBack, AlgGui::bboxCallBack, nullptr, nullptr, width, height);
+	PtrALGWrap api = createALGWrap(bgCallBack, bboxCallBack, nullptr, nullptr, width, height);
+
+
+	api->add(rp, true);
 
 	for (;;) {
 		if (isClickToClose) {
@@ -162,31 +195,85 @@ void AlgGui::startShowVideo(std::string path)
 			break;
 		}
 
-		Mat transHelp;
-		cvtColor(frame_cv, transHelp, COLOR_BGR2RGB);
+		rgbdata = RGBData((char*)frame_cv.data, width, height);
 
 		double start3 = (double)cv::getTickCount();
-		// Debug Mode : default(INTER_NEAREST -- bilinear interpolation) cost about 15ms. 
-		//              INTER_NEAREST(-- nearest neighbor interpolation) cost about 5ms, but terrible effect.(!其速度是呈抛物线式，非单纯线性)
-		//              INTER_AREA(-- resampling using pixel area relation) cost about 45ms, but nice effect.
-		// Under Release Mode, they all cost LESS time.
+		//update the background model
+		api->work(rgbdata);
 
-		//cv::resize(transHelp,transHelp,cv::Size(),0.75,0.75,wayOfResize);
-		cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
+
+
+		//get fgmask
+		api->getFgMask(FGMask);
+		if (!FGMask.empty())
+		{
+			//imshow("fgmask from main", FGMask);
+			Mat transHelp;
+			cvtColor(FGMask, transHelp, COLOR_BGR2RGB);
+			cv::resize(transHelp, transHelp, cv::Size(ui.fgLabel->width(), ui.fgLabel->height()), wayOfResize);
+			FGMaskToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+			ui.fgLabel->setPixmap(QPixmap::fromImage(FGMaskToShow));
+		}
+
+
+		//get tso
+		api->getTsoEvidence(tsoImg);
+		if (!tsoImg.empty()) {
+			//imshow("tso from main", tsoImg);
+			Mat transHelp;
+			cvtColor(tsoImg, transHelp, COLOR_BGR2RGB);
+			cv::resize(transHelp, transHelp, cv::Size(ui.tsoLabel->width(), ui.tsoLabel->height()), wayOfResize);
+			tsoImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+			ui.tsoLabel->setPixmap(QPixmap::fromImage(tsoImgToShow));
+		}
+		
+
+		if (!BG.empty())
+		{
+			Mat transHelp;
+			cvtColor(BG, transHelp, COLOR_BGR2RGB);
+			cv::resize(transHelp, transHelp, cv::Size(ui.bgLabel->width(), ui.bgLabel->height()), wayOfResize);
+			BGToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+			ui.bgLabel->setPixmap(QPixmap::fromImage(BGToShow));
+		}
+
+		if (!traceImg.empty())
+		{
+			Mat transHelp;
+			cvtColor(traceImg, transHelp, COLOR_BGR2RGB);
+			cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
+			traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+			ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
+		}
+
 
 		double time3 = ((double)(cv::getTickCount() - start3)) * 1000 / getTickFrequency();
-		//std::cout << "resize cost : " << time3 << "ms" << std::endl;
+		std::cout << "all cost : " << time3 << "ms" << std::endl;
+		//Mat transHelp;
+		//cvtColor(frame_cv, transHelp, COLOR_BGR2RGB);
+
+		//double start3 = (double)cv::getTickCount();
+		//// Debug Mode : default(INTER_NEAREST -- bilinear interpolation) cost about 15ms. 
+		////              INTER_NEAREST(-- nearest neighbor interpolation) cost about 5ms, but terrible effect.(!其速度是呈抛物线式，非单纯线性)
+		////              INTER_AREA(-- resampling using pixel area relation) cost about 45ms, but nice effect.
+		//// Under Release Mode, they all cost LESS time.
+
+		////cv::resize(transHelp,transHelp,cv::Size(),0.75,0.75,wayOfResize);
+		//cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
+
+		//double time3 = ((double)(cv::getTickCount() - start3)) * 1000 / getTickFrequency();
+		////std::cout << "resize cost : " << time3 << "ms" << std::endl;
 
 
-		// 注意step，对齐内存，防止一些奇葩格式的视频出错
-		frame_qt = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
-		//frameToShow = frame_qt.scaled(ui.videoLabel->width(), ui.videoLabel->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		//// 注意step，对齐内存，防止一些奇葩格式的视频出错
+		//frame_qt = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+		////frameToShow = frame_qt.scaled(ui.videoLabel->width(), ui.videoLabel->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
 
-		ui.frameLabel->setPixmap(QPixmap::fromImage(frame_qt));
+		//ui.frameLabel->setPixmap(QPixmap::fromImage(frame_qt));
 
 
-		waitKey(16);
+		waitKey(30);
 
 
 
