@@ -254,7 +254,8 @@ public:
         BoxOfIsYolo->clear();
         BoxOfIsYolo->insertItems(0, QStringList()
          << QApplication::translate("AlgGuiClass", "\345\220\246", Q_NULLPTR)
-         << QApplication::translate("AlgGuiClass", "\346\230\257", Q_NULLPTR)
+         << QApplication::translate("AlgGuiClass", "\346\230\257\357\274\214\345\271\266\345\256\236\346\227\266", Q_NULLPTR)
+         << QApplication::translate("AlgGuiClass", "\346\230\257\357\274\214\344\275\206\344\273\205\346\212\245\350\255\246\345\233\276\347\211\207", Q_NULLPTR)
         );
         label_3->setText(QApplication::translate("AlgGuiClass", "Alarm\346\227\266\351\227\264\357\274\232", Q_NULLPTR));
     } // retranslateUi

@@ -115,12 +115,16 @@ void AlgGui::on_BtnFilePath_clicked()
 	default:
 		break;
 	case(0):
-		isYolo = false;
+		isYolo = NO_YOLO;
 		std::cout << "NO YOLO" << std::endl;
 		break;
 	case(1):
-		isYolo = true;
-		std::cout << "with YOLO" << std::endl;
+		isYolo = YOLO_ALL_TIME;
+		std::cout << "with YOLO all time" << std::endl;
+		break;
+	case(2):
+		isYolo = YOLO_ONLY_ALARM_TIME;
+		std::cout << "with YOLO only alarm time" << std::endl;
 		break;
 	}
 
