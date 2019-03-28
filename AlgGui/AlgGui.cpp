@@ -115,11 +115,11 @@ void AlgGui::on_BtnFilePath_clicked()
 	default:
 		break;
 	case(0):
-		IndexOfYolo = false;
+		isYolo = false;
 		std::cout << "NO YOLO" << std::endl;
 		break;
 	case(1):
-		IndexOfYolo = true;
+		isYolo = true;
 		std::cout << "with YOLO" << std::endl;
 		break;
 	}

@@ -36,6 +36,9 @@
     <ClCompile Include="AlgGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="YoloDetector2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="AlgGui.h">
@@ -58,6 +61,9 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_AlgGui.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YoloDetector2.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

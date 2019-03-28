@@ -50,6 +50,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="AlgWrap.props" />
     <Import Project="opencvGpu.props" />
+    <Import Project="yolo.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -118,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="AlgGui.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="YoloDetector2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="AlgGui.h" />
@@ -133,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_AlgGui.h" />
+    <ClInclude Include="YoloDetector2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
