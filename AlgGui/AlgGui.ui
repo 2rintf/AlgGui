@@ -248,7 +248,12 @@
         </item>
         <item>
          <property name="text">
-          <string>是</string>
+          <string>是，并实时</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>是，但仅报警图片</string>
          </property>
         </item>
        </widget>
