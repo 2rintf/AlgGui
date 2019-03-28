@@ -47,8 +47,13 @@ protected:
 
 	/*** param ***/
 	int wayOfResize = cv::INTER_AREA;
-	bool isYolo = false;
+	int isYolo;
 	int alarmTime;
+	enum {
+		NO_YOLO              = 0,
+		YOLO_ALL_TIME        = 1,
+		YOLO_ONLY_ALARM_TIME = 2
+	};
 	/*** param ***/
 
 	/***** algWrap π”√ *****/
