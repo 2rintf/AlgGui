@@ -4,13 +4,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <IncludePath>C:\Users\chen\Desktop\darknet-Yolo_v3\src;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\chen\Desktop\yolo_cpp_dll2;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\chen\Desktop\yolo_cpp_dll2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>yolo_cpp_dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

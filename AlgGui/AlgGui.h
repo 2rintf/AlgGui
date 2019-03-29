@@ -4,7 +4,9 @@
 #include <QtCore>
 #include <qfiledialog.h>
 #include "ui_AlgGui.h"
-#include "algwrap.h"
+#include <algWrap.h>
+//#include "YoloDetector2.h"
+#include <yolo_v2_class.hpp>
 
 #include <opencv2/opencv.hpp>
 //#include <opencv2/highgui.hpp>
@@ -49,12 +51,22 @@ protected:
 	int wayOfResize = cv::INTER_AREA;
 	int isYolo;
 	int alarmTime;
-	enum {
+	enum yoloWay{
 		NO_YOLO              = 0,
 		YOLO_ALL_TIME        = 1,
 		YOLO_ONLY_ALARM_TIME = 2
 	};
+	enum yoloVer {
+		YOLO_V3       = 1,
+		YOLO_V3_TINY  = 2
+	};
 	/*** param ***/
+
+
+	/*** yolo使用 ***/
+	std::shared_ptr<Detector> detector = nullptr;
+	std::vector<std::string> obj_names;
+	/*** yolo使用 ***/
 
 	/***** algWrap使用 *****/
 	BGCallBack bgcb;
@@ -62,7 +74,7 @@ protected:
 	int width;
 	int height;
 	RGBData rgbdata;
-	Region region;
+	//Region region;
 	RegionParam rp;
 
 	Region getRegion(int width, int height)
