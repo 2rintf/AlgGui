@@ -14,6 +14,16 @@ void AlgGui::videoWinAllClear()
 	ui.bgLabel->clear();
 	ui.fgLabel->clear();
 	ui.tsoLabel->clear();
+	ui.alarmImgLabel->clear();
+}
+
+// [utils func]. 用于clear所有显示图片变量的cache.
+void AlgGui::clearAllImgCache()
+{
+	BG = Scalar::all(0);
+	FGMask = Scalar::all(0);
+	tsoImg = Scalar::all(0);
+	traceImg = Scalar::all(0);
 }
 
 // [utils func]. 用于视频开始时，disable所有参数选项.
@@ -89,6 +99,10 @@ void AlgGui::on_BtnCloseVideo_clicked()
 void AlgGui::on_BtnFilePath_clicked()
 {
 
+	// 重置报警计数Flag
+	alarmCount = 0;
+	nowYoloCount = 0;
+
 	/*****************确认输入参数-START************************/
 	std::cout << "===========param used==============" << std::endl;
 
@@ -128,6 +142,7 @@ void AlgGui::on_BtnFilePath_clicked()
 		break;
 	}
 
+	// YOLO版本选择
 	int IndexOfYoloVer = ui.BoxOfYoloVer->currentIndex();
 	switch (IndexOfYoloVer)
 	{
@@ -135,12 +150,17 @@ void AlgGui::on_BtnFilePath_clicked()
 		break;
 	case(0):
 		yoloVerFlag = YOLO_V3_TINY;
-		std::cout << "yolo ver: YOLO_V3_TINY" << std::endl;
+		std::cout << "YOLO ver: YOLO_V3_TINY" << std::endl;
 		break;
 	case(1):
 		yoloVerFlag = YOLO_V3;
-		std::cout << "yolo ver: YOLO_V3" << std::endl;
+		std::cout << "YOLO ver: YOLO_V3" << std::endl;
 	}
+
+	// YOLO阈值
+	yoloThresh = ui.BoxOfYoloThresh->value();
+	std::cout << "YOLO thresh: " << yoloThresh << std::endl;
+
 
 	// alarmTime
 	alarmTime = ui.BoxOfAlarmTime->value();
@@ -225,6 +245,7 @@ void AlgGui::startShowVideo(std::string path)
 	for (;;) {
 		if (isClickToClose) {
 			videoWinAllClear();
+			clearAllImgCache();
 			isClickToClose = false;
 			break;
 		}
@@ -279,73 +300,76 @@ void AlgGui::startShowVideo(std::string path)
 			ui.bgLabel->setPixmap(QPixmap::fromImage(BGToShow));
 		}
 
-		// 对于frameLabel的处理
-		if (isYolo == NO_YOLO)// 没有选择YOLO，则直接显示traceImg.
-		{
-			if (!traceImg.empty())
+		// 对于frameLabel的处理 (必须在BG初始学习完毕后，这样子就不会受到yolo速度慢的影响，导致背景学习帧数减少)
+		if (api->isLearnedBG()) {
+			if (isYolo == NO_YOLO)// 没有选择YOLO，则直接显示traceImg.
 			{
-				Mat transHelp;
-				cvtColor(traceImg, transHelp, COLOR_BGR2RGB);
-				cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
-				traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
-				ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
-			}
-		}
-		else if (isYolo == YOLO_ALL_TIME)// 选择实时YOLO，则对frame进行yolo识别，然后显示.
-		{
-			// 将traceImg当作背景学习初始化的flag
-			if (!traceImg.empty())
-			{
-
-				image_t imgFromFrame = api->image_to_Mat(frame_cv.data, frame_cv.cols, frame_cv.rows);
-
-				std::vector<bbox_t> result_vec = detector->detect(imgFromFrame, 0.2);
-				api->draw_boxes(frame_cv, result_vec, obj_names);
-
-				free(imgFromFrame.data);// 释放内存！！
-
-
-				Mat transHelp;
-				cvtColor(frame_cv, transHelp, COLOR_BGR2RGB);
-				cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
-				traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
-				ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
-			}
-		}
-		else if (isYolo == YOLO_ONLY_ALARM_TIME)// 选择yolo只识别报警图片，则取noDrawAlarmImg进行yolo的detect，然后画框于alarmImg，并显示.
-		{
-			// TO-DO
-			if (!traceImg.empty())
-			{
-				if (nowYoloCount != alarmCount)
+				if (!traceImg.empty())
 				{
-					image_t imgFromFrame = api->image_to_Mat(noDrawAlarmImg.data, noDrawAlarmImg.cols, noDrawAlarmImg.rows);
+					Mat transHelp;
+					cvtColor(traceImg, transHelp, COLOR_BGR2RGB);
+					cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
+					traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+					ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
+				}
+			}
+			else if (isYolo == YOLO_ALL_TIME)// 选择实时YOLO，则对frame进行yolo识别，然后显示.
+			{
+				// 将traceImg当作背景学习初始化的flag
+				if (!traceImg.empty())
+				{
 
-					std::vector<bbox_t> result_vec = detector->detect(imgFromFrame, 0.2);// 检测的时候使用无画框的图片进行detect
-					api->draw_boxes(alarmImg, result_vec, obj_names);// 画yolo框时用有画框的图片
+					image_t imgFromFrame = api->image_to_Mat(frame_cv.data, frame_cv.cols, frame_cv.rows);
+
+					std::vector<bbox_t> result_vec = detector->detect(imgFromFrame, yoloThresh);
+					api->draw_boxes(frame_cv, result_vec, obj_names);
 
 					free(imgFromFrame.data);// 释放内存！！
 
-					imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(nowYoloCount) + "_yolo.jpg", alarmImg);
-					nowYoloCount++;
+
+					Mat transHelp;
+					cvtColor(frame_cv, transHelp, COLOR_BGR2RGB);
+					cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
+					traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+					ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
+				}
+			}
+			else if (isYolo == YOLO_ONLY_ALARM_TIME)// 选择yolo只识别报警图片，则取noDrawAlarmImg进行yolo的detect，然后画框于alarmImg，并显示.
+			{
+				// TO-DO
+				if (!traceImg.empty())
+				{
+					if (nowYoloCount != alarmCount)
+					{
+						image_t imgFromFrame = api->image_to_Mat(noDrawAlarmImg.data, noDrawAlarmImg.cols, noDrawAlarmImg.rows);
+
+						std::vector<bbox_t> result_vec = detector->detect(imgFromFrame, yoloThresh);// 检测的时候使用无画框的图片进行detect
+						api->draw_boxes(alarmImg, result_vec, obj_names);// 画yolo框时用有画框的图片
+
+						free(imgFromFrame.data);// 释放内存！！
+
+						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(nowYoloCount) + "_yolo.jpg", alarmImg);
+						nowYoloCount++;
+
+
+						Mat transHelp;
+						cvtColor(alarmImg, transHelp, COLOR_BGR2RGB);
+						cv::resize(transHelp, transHelp, cv::Size(ui.alarmImgLabel->width(), ui.alarmImgLabel->height()), wayOfResize);
+						alarmImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+						ui.alarmImgLabel->setPixmap(QPixmap::fromImage(alarmImgToShow));
+					}
 
 
 					Mat transHelp;
-					cvtColor(alarmImg, transHelp, COLOR_BGR2RGB);
-					cv::resize(transHelp, transHelp, cv::Size(ui.alarmImgLabel->width(), ui.alarmImgLabel->height()), wayOfResize);
-					alarmImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
-					ui.alarmImgLabel->setPixmap(QPixmap::fromImage(alarmImgToShow));
+					cvtColor(traceImg, transHelp, COLOR_BGR2RGB);
+					cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
+					traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+					ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
+
 				}
-
-
-				Mat transHelp;
-				cvtColor(traceImg, transHelp, COLOR_BGR2RGB);
-				cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
-				traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
-				ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
-
 			}
 		}
+
 
 		double time3 = ((double)(cv::getTickCount() - start3)) * 1000 / getTickFrequency();
 		std::cout << "all cost : " << time3 << "ms" << std::endl;

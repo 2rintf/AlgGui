@@ -46,7 +46,7 @@ protected:
 
 	Mat noDrawAlarmImg;
 
-	int alarmCount = 0;
+	int alarmCount = 0;// 报警计数，用于和nowYoloCount协同工作
 
 	/*** param ***/
 	int wayOfResize = cv::INTER_AREA;
@@ -62,6 +62,7 @@ protected:
 		YOLO_V3       = 1,
 		YOLO_V3_TINY  = 2
 	};
+	double yoloThresh;
 	/*** param ***/
 
 
@@ -169,6 +170,7 @@ protected:
 	bool isClickToClose = false;
 
 	void videoWinAllClear();
+	void clearAllImgCache();
 	void disableAllParamSet();
 	void enableAllParamSet();
 

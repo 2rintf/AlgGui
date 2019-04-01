@@ -129,9 +129,9 @@
   <widget class="QWidget" name="horizontalLayoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>20</x>
      <y>30</y>
-     <width>301</width>
+     <width>321</width>
      <height>61</height>
     </rect>
    </property>
@@ -175,10 +175,10 @@
   <widget class="QGroupBox" name="paramGroupBox">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>100</y>
-     <width>301</width>
-     <height>161</height>
+     <x>20</x>
+     <y>90</y>
+     <width>321</width>
+     <height>211</height>
     </rect>
    </property>
    <property name="title">
@@ -286,6 +286,36 @@
           <string>YOLOV3</string>
          </property>
         </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <family>宋体</family>
+          <pointsize>11</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>YOLO阈值：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="BoxOfYoloThresh">
+        <property name="maximum">
+         <double>0.990000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.500000000000000</double>
+        </property>
        </widget>
       </item>
      </layout>
