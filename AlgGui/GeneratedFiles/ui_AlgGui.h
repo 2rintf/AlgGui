@@ -58,9 +58,15 @@ public:
     QHBoxLayout *horizontalLayout;
     QLabel *label_2;
     QComboBox *BoxOfIsYolo;
+    QHBoxLayout *horizontalLayout_3;
+    QLabel *label_4;
+    QComboBox *BoxOfYoloVer;
     QHBoxLayout *horizontalLayout_2;
     QLabel *label_3;
     QSpinBox *BoxOfAlarmTime;
+    QGroupBox *groupBox_4;
+    QGridLayout *gridLayout_5;
+    QLabel *alarmImgLabel;
 
     void setupUi(QDialog *AlgGuiClass)
     {
@@ -153,7 +159,7 @@ public:
 
         paramGroupBox = new QGroupBox(AlgGuiClass);
         paramGroupBox->setObjectName(QStringLiteral("paramGroupBox"));
-        paramGroupBox->setGeometry(QRect(40, 100, 301, 141));
+        paramGroupBox->setGeometry(QRect(40, 100, 301, 161));
         verticalLayout = new QVBoxLayout(paramGroupBox);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
@@ -200,6 +206,23 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
+        horizontalLayout_3 = new QHBoxLayout();
+        horizontalLayout_3->setSpacing(6);
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        label_4 = new QLabel(paramGroupBox);
+        label_4->setObjectName(QStringLiteral("label_4"));
+        label_4->setFont(font1);
+
+        horizontalLayout_3->addWidget(label_4);
+
+        BoxOfYoloVer = new QComboBox(paramGroupBox);
+        BoxOfYoloVer->setObjectName(QStringLiteral("BoxOfYoloVer"));
+
+        horizontalLayout_3->addWidget(BoxOfYoloVer);
+
+
+        verticalLayout->addLayout(horizontalLayout_3);
+
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
@@ -220,6 +243,18 @@ public:
 
 
         verticalLayout->addLayout(horizontalLayout_2);
+
+        groupBox_4 = new QGroupBox(AlgGuiClass);
+        groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
+        groupBox_4->setGeometry(QRect(20, 300, 321, 201));
+        gridLayout_5 = new QGridLayout(groupBox_4);
+        gridLayout_5->setSpacing(6);
+        gridLayout_5->setContentsMargins(11, 11, 11, 11);
+        gridLayout_5->setObjectName(QStringLiteral("gridLayout_5"));
+        alarmImgLabel = new QLabel(groupBox_4);
+        alarmImgLabel->setObjectName(QStringLiteral("alarmImgLabel"));
+
+        gridLayout_5->addWidget(alarmImgLabel, 0, 0, 1, 1);
 
 
         retranslateUi(AlgGuiClass);
@@ -257,7 +292,15 @@ public:
          << QApplication::translate("AlgGuiClass", "\346\230\257\357\274\214\345\271\266\345\256\236\346\227\266", Q_NULLPTR)
          << QApplication::translate("AlgGuiClass", "\346\230\257\357\274\214\344\275\206\344\273\205\346\212\245\350\255\246\345\233\276\347\211\207", Q_NULLPTR)
         );
+        label_4->setText(QApplication::translate("AlgGuiClass", "YOLO\347\211\210\346\234\254:", Q_NULLPTR));
+        BoxOfYoloVer->clear();
+        BoxOfYoloVer->insertItems(0, QStringList()
+         << QApplication::translate("AlgGuiClass", "YOLOV3-tiny", Q_NULLPTR)
+         << QApplication::translate("AlgGuiClass", "YOLOV3", Q_NULLPTR)
+        );
         label_3->setText(QApplication::translate("AlgGuiClass", "Alarm\346\227\266\351\227\264\357\274\232", Q_NULLPTR));
+        groupBox_4->setTitle(QApplication::translate("AlgGuiClass", "AlArmImg", Q_NULLPTR));
+        alarmImgLabel->setText(QApplication::translate("AlgGuiClass", "TextLabel", Q_NULLPTR));
     } // retranslateUi
 
 };

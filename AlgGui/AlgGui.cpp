@@ -47,91 +47,6 @@ std::string qstr2str(const QString qstr)
 	QByteArray cdata = qstr.toLocal8Bit();
 	return std::string(cdata);
 }
-
-image_t make_empty_image(int w, int h, int c)
-{
-	image_t out;
-	out.data = 0;
-	out.h = h;
-	out.w = w;
-	out.c = c;
-	return out;
-}
-//image_t make_image(int w, int h, int c)
-//{
-//	image_t out = make_empty_image(w, h, c);
-//	out.data = (float*)calloc(h*w*c, sizeof(float)); //这边估计要保留下来，这块内存
-//	return out;
-//}
-
-//void rgbgr_image(image_t im)
-//{
-//	int i;
-//	for (i = 0; i < im.w*im.h; ++i) {
-//		float swap = im.data[i];
-//		im.data[i] = im.data[i + im.w*im.h * 2];
-//		im.data[i + im.w*im.h * 2] = swap;
-//	}
-//}
-
-
-image_t image_to_Mat(unsigned char * src, int width, int height)
-{
-	unsigned char *data = src;
-	int h = height;
-	int w = width;
-	int c = 3;
-	int step = width * c;
-	//image_t out = make_image(w, h, c);
-	image_t out = make_empty_image(w, h, c);
-
-	int i, j, k, count = 0;;
-
-	for (k = 0; k < c; ++k) {
-		for (i = 0; i < h; ++i) {
-			for (j = 0; j < w; ++j) {
-				out.data[count++] = data[i*step + j * c + k] / 255.;
-			}
-		}
-	}
-	return out;
-}
-
-//std::vector<std::string> objects_names_from_file(std::string const filename)
-//{
-//	std::ifstream file(filename);
-//	std::vector<std::string> file_lines;
-//	if (!file.is_open()) return file_lines;
-//	for (std::string line; getline(file, line);) file_lines.push_back(line);
-//	std::cout << "object names loaded \n";
-//	return file_lines;
-//}
-
-void draw_boxes(cv::Mat& mat_img, std::vector<bbox_t> result_vec, std::vector<std::string> obj_names, int current_det_fps = -1, int current_cap_fps = -1)
-{
-	if (obj_names.empty()) {
-		std::cout << "names_file initialize failed!" << std::endl;
-		return;
-	}
-
-	int const colors[6][3] = { { 1,0,1 },{ 0,0,1 },{ 0,1,1 },{ 0,1,0 },{ 1,1,0 },{ 1,0,0 } };
-	for (auto &i : result_vec) {
-		cv::Scalar color = obj_id_to_color(i.obj_id);
-		cv::rectangle(mat_img, cv::Rect(i.x, i.y, i.w, i.h), color, 2);
-		if (obj_names.size() > i.obj_id) {
-			std::string obj_name = obj_names[i.obj_id];
-			if (i.track_id > 0) obj_name += " - " + std::to_string(i.track_id);
-			cv::Size const text_size = getTextSize(obj_name, cv::FONT_HERSHEY_COMPLEX_SMALL, 1, 2, 0);
-			int const max_width = (text_size.width > i.w + 2) ? text_size.width : (i.w + 2);
-			cv::rectangle(mat_img, cv::Point2f(std::max((int)i.x - 1, 0), std::max((int)i.y - 30, 0)),
-				cv::Point2f(std::min((int)i.x + max_width, mat_img.cols - 1), std::min((int)i.y, mat_img.rows - 1)),
-				color, CV_FILLED, 8, 0);
-			putText(mat_img, obj_name, cv::Point2f(i.x, i.y - 10), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(0, 0, 0), 2);
-		}
-	}
-
-
-}
 /**************** utils func end ****************/
 
 AlgGui* AlgGui::p = NULL;
@@ -213,9 +128,23 @@ void AlgGui::on_BtnFilePath_clicked()
 		break;
 	}
 
+	int IndexOfYoloVer = ui.BoxOfYoloVer->currentIndex();
+	switch (IndexOfYoloVer)
+	{
+	default:
+		break;
+	case(0):
+		yoloVerFlag = YOLO_V3_TINY;
+		std::cout << "yolo ver: YOLO_V3_TINY" << std::endl;
+		break;
+	case(1):
+		yoloVerFlag = YOLO_V3;
+		std::cout << "yolo ver: YOLO_V3" << std::endl;
+	}
+
 	// alarmTime
 	alarmTime = ui.BoxOfAlarmTime->value();
-	std::cout << "alarm time:" << alarmTime << std::endl;
+	std::cout << "alarm time: " << alarmTime << std::endl;
 
 
 	std::cout << "===========param used==============" << std::endl;
@@ -263,9 +192,9 @@ void AlgGui::startShowVideo(std::string path)
 
 
 	PtrALGWrap api = createALGWrap(bgCallBack, bboxCallBack, nullptr, nullptr, width, height);
-		
 
-	if (isYolo!=NO_YOLO)
+
+	if (isYolo != NO_YOLO)
 	{
 		//std::string names_file = "coco.names";
 		//std::string cfg_file = "yolov3-tiny.cfg";
@@ -275,13 +204,20 @@ void AlgGui::startShowVideo(std::string path)
 		//detector = createDarknetDetector(cfg_file, weights_file, 0);
 		//obj_names = objects_names_from_file(names_file);
 
-		detector = api->YOLOInitialize();
-		obj_names = api->setNamesFile();
+		if (yoloVerFlag == YOLO_V3)
+		{
+			std::string cfg_file = "yolov3.cfg";
+			std::string weights_file = "yolov3.weights";
+			detector = api->YOLOInitializeSelf(cfg_file, weights_file, 0);
+			obj_names = api->setNamesFile();
+		}
+		else
+		{
+			detector = api->YOLOInitialize();
+			obj_names = api->setNamesFile();
+		}
+
 	}
-
-
-
-
 
 
 	api->add(rp, true);
@@ -332,8 +268,8 @@ void AlgGui::startShowVideo(std::string path)
 			tsoImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
 			ui.tsoLabel->setPixmap(QPixmap::fromImage(tsoImgToShow));
 		}
-		
 
+		// get bg
 		if (!BG.empty())
 		{
 			Mat transHelp;
@@ -343,7 +279,9 @@ void AlgGui::startShowVideo(std::string path)
 			ui.bgLabel->setPixmap(QPixmap::fromImage(BGToShow));
 		}
 
-		if (isYolo==NO_YOLO) {
+		// 对于frameLabel的处理
+		if (isYolo == NO_YOLO)// 没有选择YOLO，则直接显示traceImg.
+		{
 			if (!traceImg.empty())
 			{
 				Mat transHelp;
@@ -353,19 +291,20 @@ void AlgGui::startShowVideo(std::string path)
 				ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
 			}
 		}
-		else if (isYolo == YOLO_ALL_TIME) {
+		else if (isYolo == YOLO_ALL_TIME)// 选择实时YOLO，则对frame进行yolo识别，然后显示.
+		{
 			// 将traceImg当作背景学习初始化的flag
-			if (!traceImg.empty()) 
+			if (!traceImg.empty())
 			{
-				
-				image_t imgFromFrame =api->image_to_Mat(frame_cv.data, frame_cv.cols, frame_cv.rows);
+
+				image_t imgFromFrame = api->image_to_Mat(frame_cv.data, frame_cv.cols, frame_cv.rows);
 
 				std::vector<bbox_t> result_vec = detector->detect(imgFromFrame, 0.2);
 				api->draw_boxes(frame_cv, result_vec, obj_names);
 
 				free(imgFromFrame.data);// 释放内存！！
 
-				// 开始正常UI交互
+
 				Mat transHelp;
 				cvtColor(frame_cv, transHelp, COLOR_BGR2RGB);
 				cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
@@ -373,14 +312,40 @@ void AlgGui::startShowVideo(std::string path)
 				ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
 			}
 		}
-		else if (isYolo == YOLO_ONLY_ALARM_TIME)
+		else if (isYolo == YOLO_ONLY_ALARM_TIME)// 选择yolo只识别报警图片，则取noDrawAlarmImg进行yolo的detect，然后画框于alarmImg，并显示.
 		{
 			// TO-DO
+			if (!traceImg.empty())
+			{
+				if (nowYoloCount != alarmCount)
+				{
+					image_t imgFromFrame = api->image_to_Mat(noDrawAlarmImg.data, noDrawAlarmImg.cols, noDrawAlarmImg.rows);
+
+					std::vector<bbox_t> result_vec = detector->detect(imgFromFrame, 0.2);// 检测的时候使用无画框的图片进行detect
+					api->draw_boxes(alarmImg, result_vec, obj_names);// 画yolo框时用有画框的图片
+
+					free(imgFromFrame.data);// 释放内存！！
+
+					imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(nowYoloCount) + "_yolo.jpg", alarmImg);
+					nowYoloCount++;
+
+
+					Mat transHelp;
+					cvtColor(alarmImg, transHelp, COLOR_BGR2RGB);
+					cv::resize(transHelp, transHelp, cv::Size(ui.alarmImgLabel->width(), ui.alarmImgLabel->height()), wayOfResize);
+					alarmImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+					ui.alarmImgLabel->setPixmap(QPixmap::fromImage(alarmImgToShow));
+				}
+
+
+				Mat transHelp;
+				cvtColor(traceImg, transHelp, COLOR_BGR2RGB);
+				cv::resize(transHelp, transHelp, cv::Size(ui.frameLabel->width(), ui.frameLabel->height()), wayOfResize);
+				traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+				ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
+
+			}
 		}
-		
-
-
-
 
 		double time3 = ((double)(cv::getTickCount() - start3)) * 1000 / getTickFrequency();
 		std::cout << "all cost : " << time3 << "ms" << std::endl;
