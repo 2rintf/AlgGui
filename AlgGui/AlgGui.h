@@ -4,7 +4,9 @@
 #include <QtCore>
 #include <qfiledialog.h>
 #include "ui_AlgGui.h"
-#include "algwrap.h"
+#include <algWrap.h>
+//#include "YoloDetector2.h"
+#include <yolo_v2_class.hpp>
 
 #include <opencv2/opencv.hpp>
 //#include <opencv2/highgui.hpp>
@@ -32,29 +34,44 @@ protected:
 	std::string alarmPath_cv;// 报警图片保存路径
 
 	Mat BG;
-	static Mat _BG;
 	Mat FGMask;
 	Mat tsoImg;
 	Mat traceImg;
-	static Mat _traceImg;
 	Mat alarmImg;
-	static Mat _alarmImg;
 	QImage BGToShow;
 	QImage FGMaskToShow;
 	QImage tsoImgToShow;
 	QImage traceImgToShow;
 	QImage alarmImgToShow;
 
+	Mat noDrawAlarmImg;
+
+	int alarmCount = 0;// 报警计数，用于和nowYoloCount协同工作
+
 	/*** param ***/
 	int wayOfResize = cv::INTER_AREA;
 	int isYolo;
+	int yoloVerFlag;
 	int alarmTime;
-	enum {
+	enum yoloWay{
 		NO_YOLO              = 0,
 		YOLO_ALL_TIME        = 1,
 		YOLO_ONLY_ALARM_TIME = 2
 	};
+	enum yoloVer {
+		YOLO_V3       = 1,
+		YOLO_V3_TINY  = 2
+	};
+	double yoloThresh;
 	/*** param ***/
+
+
+	/*** yolo使用 ***/
+	std::shared_ptr<Detector> detector = nullptr;
+	std::vector<std::string> obj_names;
+
+	int nowYoloCount = 0;// 用于确认是否有报警图片需要进行yolo识别
+	/*** yolo使用 ***/
 
 	/***** algWrap使用 *****/
 	BGCallBack bgcb;
@@ -62,7 +79,7 @@ protected:
 	int width;
 	int height;
 	RGBData rgbdata;
-	Region region;
+	//Region region;
 	RegionParam rp;
 
 	Region getRegion(int width, int height)
@@ -86,14 +103,11 @@ protected:
 	}
 
 
-	// bg回调函数
+	// bg回调函数. static 解决类中回调函数的类指针问题。
 	static void bgCallBack(RGBData backgroundImg, bool endFlag, void* data);
 
-	// bbox回调函数
+	// bbox回调函数. static 解决类中回调函数的类指针问题。
 	static void bboxCallBack(std::vector<BBox> boxes, RGBData frame, void* data);
-
-
-
 
 	void bgCallBack_intern(RGBData backgroundImg, bool endFlag, void* data) {
 		if (endFlag)
@@ -120,10 +134,29 @@ protected:
 				}
 				else
 				{
-					help.copyTo(drawFrame);// 因为浅拷贝，故frame会实时改变
-					rectangle(drawFrame, rect, Scalar(0, 0, 255), 2);
-					//imshow("real alarm(over time)", drawFrame);
-					drawFrame.copyTo(alarmImg);
+					if (isYolo == NO_YOLO) 
+					{
+						help.copyTo(drawFrame);// 因为浅拷贝，故frame会实时改变
+						rectangle(drawFrame, rect, Scalar(0, 0, 255), 2);
+						//imshow("real alarm(over time)", drawFrame);
+						drawFrame.copyTo(alarmImg);
+
+						std::cout << "C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg" << std::endl;
+						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg", alarmImg);
+					}
+					else
+					{
+						help.copyTo(noDrawAlarmImg);// 因为浅拷贝，故frame会实时改变
+						noDrawAlarmImg.copyTo(alarmImg);
+						rectangle(alarmImg, rect, Scalar(0, 0, 255), 2);
+						//imshow("real alarm(over time)", drawFrame);
+
+						std::cout << "C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg" << std::endl;
+						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg", alarmImg);
+					}
+
+
+					alarmCount++;
 				}
 			}
 		}
@@ -131,26 +164,13 @@ protected:
 		//imshow("trace from main", help2);
 		//waitKey(1);
 	}
-	
 	/***** algWrap使用 *****/
-
-
-
-	Mat bgImg;
-	//Mat fgImg;
-	//Mat tsoImg;
-	QImage bgImg_qt;
-	//QImage fgImg_qt;
-	//QImage tsoImg_qt;
-
-	//Mat alarmImg;
-	//QImage alarmImg_qt;
-
 
 
 	bool isClickToClose = false;
 
 	void videoWinAllClear();
+	void clearAllImgCache();
 	void disableAllParamSet();
 	void enableAllParamSet();
 

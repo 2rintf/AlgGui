@@ -9,6 +9,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies>algWrap.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\chen\Desktop\algWrap\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
