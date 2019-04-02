@@ -312,6 +312,17 @@ void AlgGui::startShowVideo(std::string path)
 					traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
 					ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
 				}
+				if (nowYoloCount != alarmCount)// 在没有使用yolo时，nowYoloCount也可以作为是否显示报警图片的Flag
+				{
+					nowYoloCount++;
+
+					Mat transHelp;
+					cvtColor(alarmImg, transHelp, COLOR_BGR2RGB);
+					cv::resize(transHelp, transHelp, cv::Size(ui.alarmImgLabel->width(), ui.alarmImgLabel->height()), wayOfResize);
+					alarmImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+					ui.alarmImgLabel->setPixmap(QPixmap::fromImage(alarmImgToShow));
+					
+				}
 			}
 			else if (isYolo == YOLO_ALL_TIME)// 选择实时YOLO，则对frame进行yolo识别，然后显示.
 			{
@@ -333,6 +344,19 @@ void AlgGui::startShowVideo(std::string path)
 					traceImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
 					ui.frameLabel->setPixmap(QPixmap::fromImage(traceImgToShow));
 				}
+
+				if (nowYoloCount != alarmCount)// nowYoloCount作为是否显示报警图片的Flag
+				{
+					nowYoloCount++;
+
+					Mat transHelp;
+					cvtColor(alarmImg, transHelp, COLOR_BGR2RGB);
+					cv::resize(transHelp, transHelp, cv::Size(ui.alarmImgLabel->width(), ui.alarmImgLabel->height()), wayOfResize);
+					alarmImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
+					ui.alarmImgLabel->setPixmap(QPixmap::fromImage(alarmImgToShow));
+
+				}
+
 			}
 			else if (isYolo == YOLO_ONLY_ALARM_TIME)// 选择yolo只识别报警图片，则取noDrawAlarmImg进行yolo的detect，然后画框于alarmImg，并显示.
 			{
