@@ -47,6 +47,7 @@ protected:
 	Mat noDrawAlarmImg;
 
 	int alarmCount = 0;// 报警计数，用于和nowYoloCount协同工作
+	std::vector<Rect> alarmBox;// 储存报警的box，用于和yolo检测的框计算交并比
 
 	/*** param ***/
 	int wayOfResize = cv::INTER_AREA;
@@ -149,10 +150,12 @@ protected:
 						help.copyTo(noDrawAlarmImg);// 因为浅拷贝，故frame会实时改变
 						noDrawAlarmImg.copyTo(alarmImg);
 						rectangle(alarmImg, rect, Scalar(0, 0, 255), 2);
+						alarmBox.push_back(rect);
 						//imshow("real alarm(over time)", drawFrame);
 
 						std::cout << "C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg" << std::endl;
 						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg", alarmImg);
+
 					}
 
 

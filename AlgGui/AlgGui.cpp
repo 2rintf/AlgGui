@@ -321,7 +321,7 @@ void AlgGui::startShowVideo(std::string path)
 					cv::resize(transHelp, transHelp, cv::Size(ui.alarmImgLabel->width(), ui.alarmImgLabel->height()), wayOfResize);
 					alarmImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
 					ui.alarmImgLabel->setPixmap(QPixmap::fromImage(alarmImgToShow));
-					
+
 				}
 			}
 			else if (isYolo == YOLO_ALL_TIME)// 选择实时YOLO，则对frame进行yolo识别，然后显示.
@@ -360,20 +360,41 @@ void AlgGui::startShowVideo(std::string path)
 			}
 			else if (isYolo == YOLO_ONLY_ALARM_TIME)// 选择yolo只识别报警图片，则取noDrawAlarmImg进行yolo的detect，然后画框于alarmImg，并显示.
 			{
-				// TO-DO
 				if (!traceImg.empty())
 				{
 					if (nowYoloCount != alarmCount)
 					{
+						std::vector<bbox_t> overlapResultVec;
 						image_t imgFromFrame = api->image_to_Mat(noDrawAlarmImg.data, noDrawAlarmImg.cols, noDrawAlarmImg.rows);
 
 						std::vector<bbox_t> result_vec = detector->detect(imgFromFrame, yoloThresh);// 检测的时候使用无画框的图片进行detect
-						api->draw_boxes(alarmImg, result_vec, obj_names);// 画yolo框时用有画框的图片
+						// 此处原本逻辑有问题，会导致BUG，虽然此情况很难出现
+						// bug:如果同一帧画面刚好有两个或两个以上的alarm，那么根据原来的写法，报警图片都会保存，
+						//     但永远只有最后一张会进行YOLO检测。
+						// fix:在bbox回调函数记录alarm的BOX，然后在此处进行遍历
+						//！ BUG还未完全修改完毕！！！！！
+						for (auto iter1 : alarmBox)
+						{
+							for (auto iter2 : result_vec)
+							{
+								Rect rect(iter2.x, iter2.y, iter2.w, iter2.h);
+								float iou = (iter1&rect).area() /(float) (iter1 | rect).area();
+								std::cout << "iou:" << iou << std::endl;
+								if (iou > 0.1)
+								{
+									overlapResultVec.push_back(iter2);
+								}
+							}
+							api->draw_boxes(alarmImg, overlapResultVec, obj_names);// 画yolo框时用有画框的图片
+							overlapResultVec.clear();
+							imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(nowYoloCount) + "_yolo.jpg", alarmImg);
+							nowYoloCount++;
 
+
+						}
+						alarmBox.clear();
+						// add
 						free(imgFromFrame.data);// 释放内存！！
-
-						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(nowYoloCount) + "_yolo.jpg", alarmImg);
-						nowYoloCount++;
 
 
 						Mat transHelp;
