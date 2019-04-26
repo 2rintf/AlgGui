@@ -19,10 +19,10 @@ class AlgGui : public QDialog
 	Q_OBJECT
 
 public:
-	
+
 	AlgGui(QWidget *parent = Q_NULLPTR);
 
-	
+
 
 
 protected:
@@ -31,6 +31,9 @@ protected:
 	QImage frame_qt;
 	QImage frameToShow;
 	std::string filePath_cv;
+
+
+
 	std::string alarmPath_cv;// 报警图片保存路径
 
 	Mat BG;
@@ -53,14 +56,14 @@ protected:
 	int isYolo;
 	int yoloVerFlag;
 	int alarmTime;
-	enum yoloWay{
-		NO_YOLO              = 0,
-		YOLO_ALL_TIME        = 1,
+	enum yoloWay {
+		NO_YOLO = 0,
+		YOLO_ALL_TIME = 1,
 		YOLO_ONLY_ALARM_TIME = 2
 	};
 	enum yoloVer {
-		YOLO_V3       = 1,
-		YOLO_V3_TINY  = 2
+		YOLO_V3 = 1,
+		YOLO_V3_TINY = 2
 	};
 	double yoloThresh;
 	/*** param ***/
@@ -134,15 +137,15 @@ protected:
 				}
 				else
 				{
-					if (isYolo == NO_YOLO) 
+					if (isYolo == NO_YOLO)
 					{
 						help.copyTo(drawFrame);// 因为浅拷贝，故frame会实时改变
 						rectangle(drawFrame, rect, Scalar(0, 0, 255), 2);
 						//imshow("real alarm(over time)", drawFrame);
 						drawFrame.copyTo(alarmImg);
 
-						std::cout << "C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg" << std::endl;
-						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg", alarmImg);
+						std::cout << alarmPath_cv + "\\" + std::to_string(alarmCount) + ".jpg" << std::endl;
+						imwrite(alarmPath_cv + "\\" + std::to_string(alarmCount) + ".jpg", alarmImg);
 					}
 					else
 					{
@@ -151,8 +154,8 @@ protected:
 						rectangle(alarmImg, rect, Scalar(0, 0, 255), 2);
 						//imshow("real alarm(over time)", drawFrame);
 
-						std::cout << "C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg" << std::endl;
-						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(alarmCount) + ".jpg", alarmImg);
+						std::cout << alarmPath_cv + "\\" + std::to_string(alarmCount) + ".jpg" << std::endl;
+						imwrite(alarmPath_cv + "\\" + std::to_string(alarmCount) + ".jpg", alarmImg);
 					}
 
 
@@ -179,13 +182,13 @@ private:
 	static AlgGui* p;
 
 	void startShowVideo(std::string path);
-	
+
 private slots:
 	void on_BtnExit_clicked();
 	void on_BtnFilePath_clicked();
 	void on_BtnCloseVideo_clicked();
 
 
-	
+
 
 };

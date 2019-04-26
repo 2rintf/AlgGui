@@ -260,3 +260,6 @@ paket-files/
 __pycache__/
 *.pyc
 /AlgGui/yolov3.weights
+/报警图片6
+/报警图片7
+/报警图片8

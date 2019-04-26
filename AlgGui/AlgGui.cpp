@@ -185,6 +185,18 @@ void AlgGui::on_BtnFilePath_clicked()
 		std::cout << "std::string = " << filePath_cv << std::endl;
 	}
 
+	QString alarmPath = QFileDialog::getExistingDirectory(this, "请选择报警图片储存路径...", "./");
+	if (alarmPath.isEmpty())
+	{
+		qDebug() << "alarm path NULL!" << endl;
+		return;
+	}
+	else {
+		qDebug() << alarmPath << endl;
+		alarmPath_cv = qstr2str(alarmPath);
+		//filePath_cv = filePath.toStdString();
+		std::cout << "std::string = " << alarmPath_cv << std::endl;
+	}
 	// disable参数选项
 	disableAllParamSet();
 
@@ -321,7 +333,7 @@ void AlgGui::startShowVideo(std::string path)
 					cv::resize(transHelp, transHelp, cv::Size(ui.alarmImgLabel->width(), ui.alarmImgLabel->height()), wayOfResize);
 					alarmImgToShow = QImage((const unsigned char*)(transHelp.data), transHelp.cols, transHelp.rows, transHelp.step, QImage::Format_RGB888);
 					ui.alarmImgLabel->setPixmap(QPixmap::fromImage(alarmImgToShow));
-					
+
 				}
 			}
 			else if (isYolo == YOLO_ALL_TIME)// 选择实时YOLO，则对frame进行yolo识别，然后显示.
@@ -372,7 +384,7 @@ void AlgGui::startShowVideo(std::string path)
 
 						free(imgFromFrame.data);// 释放内存！！
 
-						imwrite("C:\\Users\\chen\\Desktop\\QtTest\\AlgGui\\alarmImg\\" + std::to_string(nowYoloCount) + "_yolo.jpg", alarmImg);
+						imwrite(alarmPath_cv + "\\" + std::to_string(nowYoloCount) + "_yolo.jpg", alarmImg);
 						nowYoloCount++;
 
 
